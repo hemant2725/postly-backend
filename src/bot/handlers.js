@@ -3,16 +3,32 @@ import { env } from '../config/env.js';
 import { getState, setState, clearState } from './conversation.js';
 import { prisma } from '../config/db.js';
 
+const isProduction = env.NODE_ENV === 'production';
+
 const bot = new TelegramBot(env.TELEGRAM_BOT_TOKEN, {
-  webHook: env.NODE_ENV === 'production',
+  webHook: isProduction,
   polling: false
 });
 
-if (env.NODE_ENV === 'production' && env.WEBHOOK_URL) {
-  bot.setWebHook(`${env.WEBHOOK_URL}/webhook/telegram`).catch((error) => {
-    console.error('Telegram webhook setup failed:', error.message);
-  });
+async function initializeBot() {
+  try {
+    if (isProduction && env.WEBHOOK_URL) {
+      await bot.setWebHook(`${env.WEBHOOK_URL}/webhook/telegram`);
+      console.log('Telegram bot webhook configured.');
+      return;
+    }
+
+    await bot.deleteWebHook({ drop_pending_updates: false });
+    await bot.startPolling({
+      restart: true,
+    });
+    console.log('Telegram bot polling started for local development.');
+  } catch (error) {
+    console.error('Telegram bot initialization failed:', error.message);
+  }
 }
+
+initializeBot();
 
 // Keyboard helpers
 function inlineKeyboard(options) {
