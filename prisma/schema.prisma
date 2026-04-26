@@ -21,6 +21,8 @@ model User {
   ai_keys          AIKey?
   posts            Post[]
   refresh_tokens   RefreshToken[]
+
+    telegram_chat_id String?  @unique
 }
 
 model RefreshToken {
