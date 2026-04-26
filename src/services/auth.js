@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../config/db.js';
 import { env } from '../config/env.js';
+import prisma from '../config/db.js';
 
 const SALT_ROUNDS = 12;
 const ACCESS_TTL = '15m';

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
-import { prisma } from '../config/db.js';
+import prisma from '../config/db.js';
 import { encrypt, decrypt } from '../utils/crypto.js';
 
 const router = Router();

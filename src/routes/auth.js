@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { register, login, refresh, logout } from '../services/auth.js';
 import { requireAuth } from '../middleware/auth.js';
-import { prisma } from '../config/db.js';
+import prisma from '../config/db.js';
 
 const router = Router();
 

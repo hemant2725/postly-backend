@@ -1,4 +1,5 @@
 import { verifyAccessToken } from '../services/auth.js';
+import prisma from '../config/db.js';
 
 export function requireAuth(req, res, next) {
   const header = req.headers.authorization;

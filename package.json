@@ -1,35 +1,33 @@
 {
   "name": "postly-backend",
   "version": "1.0.0",
-  "description": "��#\u0000 \u0000p\u0000o\u0000s\u0000t\u0000l\u0000y\u0000-\u0000b\u0000a\u0000c\u0000k\u0000e\u0000n\u0000d\u0000\r\u0000 \u0000",
-  "main": "index.js",
+  "description": "Backend for Postly - AI multi-platform content publishing system",
+  "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hemant2725/postly-backend.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["node", "express", "backend", "ai", "telegram"],
+  "author": "Hemant Singh",
   "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/hemant2725/postly-backend/issues"
-  },
-  "homepage": "https://github.com/hemant2725/postly-backend#readme",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.76.2",
+    "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.3",
     "node-telegram-bot-api": "^0.67.0",
     "openai": "^6.34.0",
-    "prisma": "^5.22.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

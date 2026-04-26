@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { z } from 'zod';
 
 const envSchema = z.object({
@@ -7,7 +8,7 @@ const envSchema = z.object({
   REDIS_URL: z.string().default('redis://localhost:6379'),
   JWT_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
-  ENCRYPTION_KEY: z.string().length(32), // for AES-256
+  ENCRYPTION_KEY: z.string().min(16), // hashed to 32 bytes for AES-256
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   TELEGRAM_BOT_TOKEN: z.string(),
