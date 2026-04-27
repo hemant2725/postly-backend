@@ -23,6 +23,8 @@ const PLATFORM_MAP = {
   Threads: 'threads'
 };
 
+const CONFIRM_ACTIONS = ['Yes, Post Now', 'Edit Idea', 'Cancel'];
+
 async function initializeBot() {
   try {
     if (isProduction && env.WEBHOOK_URL) {
@@ -93,6 +95,43 @@ async function findLinkedUser(chatId) {
   });
 }
 
+async function getConnectedAccounts(userId) {
+  return prisma.socialAccount.findMany({
+    where: { user_id: userId },
+    select: { platform: true, handle: true }
+  });
+}
+
+function isValidSelection(step, data) {
+  if (step === 'awaiting_type') {
+    return POST_TYPES.includes(data);
+  }
+
+  if (step === 'awaiting_platforms') {
+    return [...PLATFORMS, 'All', '/done'].includes(data);
+  }
+
+  if (step === 'awaiting_tone') {
+    return TONES.includes(data);
+  }
+
+  if (step === 'awaiting_model') {
+    return MODELS.includes(data);
+  }
+
+  if (step === 'awaiting_confirm') {
+    return CONFIRM_ACTIONS.includes(data);
+  }
+
+  return false;
+}
+
+async function resetToIdeaStep(chatId, state, message) {
+  state.step = 'awaiting_idea';
+  await setState(chatId, state);
+  await bot.sendMessage(chatId, message);
+}
+
 bot.onText(/\/start|\/post/, async (msg) => {
   const chatId = msg.chat.id;
   const user = await findLinkedUser(chatId);
@@ -112,6 +151,11 @@ bot.onText(/\/start|\/post/, async (msg) => {
     `Hey ${user.name}. What type of post is this?`,
     inlineKeyboard(POST_TYPES)
   );
+});
+
+bot.onText(/\/cancel/, async (msg) => {
+  await clearState(msg.chat.id);
+  await bot.sendMessage(msg.chat.id, 'Current draft cancelled. Use /post to start again.');
 });
 
 bot.onText(/\/link (.+) (.+)/, async (msg, match) => {
@@ -210,6 +254,11 @@ bot.on('callback_query', async (query) => {
   }
 
   try {
+    if (!isValidSelection(state.step, data)) {
+      await bot.answerCallbackQuery(query.id, { text: 'That option is no longer valid for this step.' });
+      return;
+    }
+
     if (state.step === 'awaiting_type') {
       state.post_type = data.toLowerCase();
       state.step = 'awaiting_platforms';
@@ -246,6 +295,11 @@ bot.on('callback_query', async (query) => {
 
         if (!state.platforms.includes(mapped)) {
           state.platforms.push(mapped);
+        } else {
+          await bot.answerCallbackQuery(query.id, {
+            text: `${mapped} already selected.`
+          });
+          return;
         }
       }
 
@@ -282,6 +336,18 @@ bot.on('callback_query', async (query) => {
       });
     } else if (state.step === 'awaiting_confirm') {
       if (data === 'Yes, Post Now') {
+        const accounts = await getConnectedAccounts(state.userId);
+
+        if (accounts.length === 0) {
+          await bot.editMessageText('No social accounts connected yet. Add at least one account first, then try /post again.', {
+            chat_id: chatId,
+            message_id: query.message.message_id
+          });
+          await clearState(chatId);
+          await bot.answerCallbackQuery(query.id);
+          return;
+        }
+
         await bot.editMessageText('Posting to queue...', {
           chat_id: chatId,
           message_id: query.message.message_id
@@ -310,7 +376,9 @@ bot.on('callback_query', async (query) => {
     }
   } catch (error) {
     console.error('Bot callback error:', error);
-    await bot.answerCallbackQuery(query.id, { text: 'Error occurred' });
+    await bot.answerCallbackQuery(query.id, { text: 'Something went wrong. Try /post again.' });
+    await clearState(chatId);
+    await bot.sendMessage(chatId, 'The current session hit an error and was cleared. Use /post to start again.');
   }
 });
 
@@ -323,15 +391,43 @@ bot.on('message', async (msg) => {
 
   const state = await getState(chatId);
 
-  if (!state || state.step !== 'awaiting_idea') {
+  if (!state) {
     return;
   }
 
-  if (msg.text.length > 500) {
+  if (state.step === 'awaiting_type' || state.step === 'awaiting_platforms' || state.step === 'awaiting_tone' || state.step === 'awaiting_model' || state.step === 'awaiting_confirm') {
+    return bot.sendMessage(chatId, 'Use the buttons above for this step, or send /cancel to restart.');
+  }
+
+  if (state.step === 'generating') {
+    return bot.sendMessage(chatId, 'Still generating your preview. Give me a moment.');
+  }
+
+  if (state.step !== 'awaiting_idea') {
+    return bot.sendMessage(chatId, 'That session is out of sync. Send /post to start again.');
+  }
+
+  const idea = msg.text?.trim();
+
+  if (!idea) {
+    return bot.sendMessage(chatId, 'Please send a short idea or core message.');
+  }
+
+  if (idea.length > 500) {
     return bot.sendMessage(chatId, 'Too long. Max 500 characters.');
   }
 
-  state.idea = msg.text;
+  const accounts = await getConnectedAccounts(state.userId);
+
+  if (accounts.length === 0) {
+    await clearState(chatId);
+    return bot.sendMessage(
+      chatId,
+      'No social accounts are connected yet. Connect at least one account first, then use /post again.'
+    );
+  }
+
+  state.idea = idea;
   state.step = 'generating';
   await setState(chatId, state);
 
@@ -370,8 +466,11 @@ bot.on('message', async (msg) => {
     console.error('Generation error:', error);
 
     await bot.deleteMessage(chatId, generatingMsg.message_id);
-    await bot.sendMessage(chatId, `Generation failed: ${error.message}`);
-    await clearState(chatId);
+    await resetToIdeaStep(
+      chatId,
+      state,
+      `Generation failed: ${error.message}\n\nSend a revised idea, switch models with /post, or send /cancel.`
+    );
   }
 });
 
