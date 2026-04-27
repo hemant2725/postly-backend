@@ -41,7 +41,9 @@ async function initializeBot() {
   }
 }
 
-initializeBot();
+if (env.NODE_ENV !== 'test') {
+  void initializeBot();
+}
 
 function inlineKeyboard(options) {
   return {
