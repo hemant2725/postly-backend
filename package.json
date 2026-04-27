@@ -13,12 +13,19 @@
     "type": "git",
     "url": "git+https://github.com/hemant2725/postly-backend.git"
   },
-  "keywords": ["node", "express", "backend", "ai", "telegram"],
+  "keywords": [
+    "node",
+    "express",
+    "backend",
+    "ai",
+    "telegram"
+  ],
   "author": "Hemant Singh",
   "license": "ISC",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
     "@prisma/client": "^5.22.0",
+    "axios": "^1.15.2",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.76.2",
     "cors": "^2.8.5",

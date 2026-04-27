@@ -154,7 +154,7 @@ bot.onText(/\/help/, (msg) => {
 const POST_TYPES = ['Announcement', 'Thread', 'Story', 'Promotional', 'Educational', 'Opinion'];
 const PLATFORMS = ['Twitter/X', 'LinkedIn', 'Instagram', 'Threads'];
 const TONES = ['Professional', 'Casual', 'Witty', 'Authoritative', 'Friendly'];
-const MODELS = ['GPT-4o (OpenAI)', 'Claude Sonnet (Anthropic)'];
+const MODELS = ['GPT-OSS 120B (Groq)', 'GPT-4o (OpenAI)', 'Claude Sonnet (Anthropic)'];
 
 const PLATFORM_MAP = {
   'Twitter/X': 'twitter',
@@ -232,7 +232,13 @@ bot.on('callback_query', async (query) => {
     
     // STEP 4: AI Model
     else if (state.step === 'awaiting_model') {
-      state.model = data.includes('GPT') ? 'openai' : 'anthropic';
+      if (data.includes('Groq')) {
+        state.model = 'groq';
+      } else if (data.includes('GPT')) {
+        state.model = 'openai';
+      } else {
+        state.model = 'anthropic';
+      }
       state.step = 'awaiting_idea';
       state.language = 'en'; // default, extensible later
       await setState(chatId, state);

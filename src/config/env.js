@@ -10,6 +10,7 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(32),
   ENCRYPTION_KEY: z.string().min(16), // hashed to 32 bytes for AES-256
   OPENAI_API_KEY: z.string().optional(),
+  GROQ_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   TELEGRAM_BOT_TOKEN: z.string(),
   WEBHOOK_URL: z.string().optional(), // for production
