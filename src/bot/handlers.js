@@ -336,26 +336,51 @@ bot.on('callback_query', async (query) => {
       });
     } else if (state.step === 'awaiting_confirm') {
       if (data === 'Yes, Post Now') {
-        const accounts = await getConnectedAccounts(state.userId);
+  const accounts = await getConnectedAccounts(state.userId);
 
-        if (accounts.length === 0) {
-          await bot.editMessageText('No social accounts connected yet. Add at least one account first, then try /post again.', {
-            chat_id: chatId,
-            message_id: query.message.message_id
-          });
-          await clearState(chatId);
-          await bot.answerCallbackQuery(query.id);
-          return;
-        }
+  if (accounts.length === 0) {
+    await bot.editMessageText('No social accounts connected yet. Add at least one account first, then try /post again.', {
+      chat_id: chatId,
+      message_id: query.message.message_id
+    });
+    await clearState(chatId);
+    await bot.answerCallbackQuery(query.id);
+    return;
+  }
 
-        await bot.editMessageText('Posting to queue...', {
-          chat_id: chatId,
-          message_id: query.message.message_id
-        });
+  await bot.editMessageText('Posting to queue...', {
+    chat_id: chatId,
+    message_id: query.message.message_id
+  });
 
-        await bot.sendMessage(chatId, 'Queued. Check /status for updates.');
-        await clearState(chatId);
-      } else if (data === 'Edit Idea') {
+  // === ACTUAL PUBLISHING LOGIC ===
+  try {
+    const { queuePostPublish } = await import('../services/publisher.js');
+    
+    // Create post in database
+    const post = await prisma.post.create({
+      data: {
+        user_id: state.userId,
+        idea: state.idea,
+        post_type: state.post_type,
+        tone: state.tone,
+        language: state.language || 'en',
+        model_used: state.model,
+        status: 'queued'
+      }
+    });
+    
+    // Queue jobs for each platform
+    await queuePostPublish(post.id, state.platforms, state.generated, state.userId);
+    
+    await bot.sendMessage(chatId, `✅ Queued for ${state.platforms.length} platform(s)! Check /status for updates.\nPost ID: ${post.id.slice(0, 8)}`);
+  } catch (err) {
+    console.error('Publish error:', err);
+    await bot.sendMessage(chatId, `❌ Failed to queue: ${err.message}`);
+  }
+  
+  await clearState(chatId);
+} else if (data === 'Edit Idea') {
         state.step = 'awaiting_idea';
         state.generated = null;
         await setState(chatId, state);
