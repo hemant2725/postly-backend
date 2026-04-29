@@ -64,7 +64,7 @@ This video demonstrates the complete end-to-end flow:
 * PostgreSQL + Prisma
 * Redis + BullMQ
 * Telegram Bot API
-* OpenAI + Anthropic APIs
+* Groq + OpenAI + Anthropic APIs (used Groq )
 
 Note:
 `OpenAI` and `Anthropic` may require active billing or funded accounts for repeated API use during development, so Groq with the `gpt-oss-120b` model was used as the most practical default for testing and iteration.
