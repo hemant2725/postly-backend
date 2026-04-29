@@ -27,8 +27,9 @@ const CONFIRM_ACTIONS = ['Yes, Post Now', 'Edit Idea', 'Cancel'];
 
 async function initializeBot() {
   try {
-    if (isProduction && env.WEBHOOK_URL) {
-      await bot.setWebHook(`${env.WEBHOOK_URL}/webhook/telegram`);
+    if (isProduction) {
+      const webhookBaseUrl = env.WEBHOOK_URL.replace(/\/$/, '');
+      await bot.setWebHook(`${webhookBaseUrl}/webhook/telegram`);
       console.log('Telegram bot webhook configured.');
       return;
     }

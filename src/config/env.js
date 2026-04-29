@@ -13,7 +13,17 @@ const envSchema = z.object({
   GROQ_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   TELEGRAM_BOT_TOKEN: z.string(),
-  WEBHOOK_URL: z.string().optional(), // for production
-});
+  WEBHOOK_URL: z
+    .string()
+    .url()
+    .refine((url) => url.startsWith('https://'), 'WEBHOOK_URL must use HTTPS')
+    .optional(), // for production
+}).refine(
+  (parsedEnv) => parsedEnv.NODE_ENV !== 'production' || Boolean(parsedEnv.WEBHOOK_URL),
+  {
+    message: 'WEBHOOK_URL is required when NODE_ENV=production',
+    path: ['WEBHOOK_URL']
+  }
+);
 
 export const env = envSchema.parse(process.env);
