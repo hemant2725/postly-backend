@@ -14,10 +14,6 @@
       "value": ""
     },
     {
-      "key": "refresh_token",
-      "value": ""
-    },
-    {
       "key": "post_id",
       "value": ""
     },
@@ -43,9 +39,38 @@
             "url": "{{base_url}}/api/auth/register",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Hemant\"\n}"
             }
-          }
+          },
+          "response": [
+            {
+              "name": "Duplicate User Example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/auth/register",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Hemant\"\n}"
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"User already exists\",\n  \"suggestion\": \"Try a different email like test+123@gmail.com or login instead\"\n}"
+            }
+          ]
         },
         {
           "name": "Login",
@@ -62,24 +87,7 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
             }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const json = pm.response.json();",
-                  "if (json?.data?.access_token) {",
-                  "  pm.collectionVariables.set('token', json.data.access_token);",
-                  "}",
-                  "if (json?.data?.refresh_token) {",
-                  "  pm.collectionVariables.set('refresh_token', json.data.refresh_token);",
-                  "}"
-                ]
-              }
-            }
-          ]
+          }
         },
         {
           "name": "Refresh Token",
@@ -94,26 +102,9 @@
             "url": "{{base_url}}/api/auth/refresh",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+              "raw": "{\n  \"refresh_token\": \"paste-refresh-token-here\"\n}"
             }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const json = pm.response.json();",
-                  "if (json?.data?.access_token) {",
-                  "  pm.collectionVariables.set('token', json.data.access_token);",
-                  "}",
-                  "if (json?.data?.refresh_token) {",
-                  "  pm.collectionVariables.set('refresh_token', json.data.refresh_token);",
-                  "}"
-                ]
-              }
-            }
-          ]
+          }
         },
         {
           "name": "Logout",
@@ -128,7 +119,7 @@
             "url": "{{base_url}}/api/auth/logout",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+              "raw": "{\n  \"refresh_token\": \"paste-refresh-token-here\"\n}"
             }
           }
         },
@@ -180,7 +171,7 @@
             "url": "{{base_url}}/api/user/profile",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"bio\": \"Building with AI\",\n  \"default_tone\": \"professional\",\n  \"default_language\": \"en\"\n}"
+              "raw": "{\n  \"name\": \"Hemant\",\n  \"bio\": \"Building with AI\",\n  \"default_tone\": \"professional\",\n  \"default_language\": \"en\"\n}"
             }
           }
         },
@@ -201,7 +192,7 @@
             "url": "{{base_url}}/api/user/social-accounts",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"platform\": \"linkedin\",\n  \"access_token\": \"platform-access-token\",\n  \"refresh_token\": \"platform-refresh-token\",\n  \"handle\": \"johndoe\"\n}"
+              "raw": "{\n  \"platform\": \"linkedin\",\n  \"access_token\": \"platform-access-token\",\n  \"refresh_token\": \"platform-refresh-token\",\n  \"handle\": \"hemant\"\n}"
             }
           }
         },
@@ -335,34 +326,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": {
-              "raw": "{{base_url}}/api/posts?page=1&limit=10&status=queued&platform=linkedin",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "posts"
-              ],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                },
-                {
-                  "key": "status",
-                  "value": "queued"
-                },
-                {
-                  "key": "platform",
-                  "value": "linkedin"
-                }
-              ]
-            }
+            "url": "{{base_url}}/api/posts?page=1&limit=10&status=queued&platform=linkedin"
           }
         },
         {
