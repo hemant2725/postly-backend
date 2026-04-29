@@ -180,23 +180,150 @@ utils/
 
 ## ⚙️ Local Setup
 
-1. Clone repo:
-   git clone 
+### Prerequisites
 
-2. Install dependencies:
-   npm install
+Install these before starting:
 
-3. Setup environment:
-   copy .env.example .env
+* Node.js 18+
+* npm
+* Docker Desktop
+* Telegram bot token from BotFather
+* Groq API key for local AI generation
 
-4. Start services:
-   docker compose up -d
+### 1. Clone the repository
 
-5. Run migrations:
-   npx prisma migrate dev
+```bash
+git clone https://github.com/hemant2725/postly-backend.git
+cd postly-backend
+```
 
-6. Start server:
-   npm run dev
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Create local environment file
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+macOS/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Update `.env` for local development:
+
+```env
+NODE_ENV=development
+PORT=3000
+
+DATABASE_URL=postgresql://postgres:password@localhost:5432/postly
+REDIS_URL=redis://localhost:6379
+
+JWT_SECRET=replace-with-a-long-random-access-token-secret
+JWT_REFRESH_SECRET=replace-with-a-different-long-random-refresh-secret
+ENCRYPTION_KEY=replace-with-a-long-random-encryption-secret
+
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+GROQ_API_KEY=your-groq-api-key
+
+# Optional locally. Required only in production webhook mode.
+WEBHOOK_URL=
+```
+
+Local mode uses Telegram polling, so no public HTTPS webhook URL is required.
+
+### 4. Start Postgres and Redis
+
+```bash
+docker compose up -d
+```
+
+This starts:
+
+* PostgreSQL on `localhost:5432`
+* Redis on `localhost:6379`
+
+### 5. Run database migrations
+
+```bash
+npx prisma migrate dev
+```
+
+Optional: open Prisma Studio to inspect local data:
+
+```bash
+npx prisma studio
+```
+
+### 6. Start the backend
+
+```bash
+npm run dev
+```
+
+The API runs at:
+
+```txt
+http://localhost:3000
+```
+
+Health check:
+
+```txt
+GET http://localhost:3000/health
+```
+
+### 7. Test the local flow
+
+1. Import `postly-collection.json` into Postman
+2. Register a user with `POST /api/auth/register`
+3. Add a social account with `POST /api/user/social-accounts`
+4. Open your Telegram bot
+5. Link your account:
+
+```txt
+/link your@email.com yourpassword
+```
+
+6. Start creating a post:
+
+```txt
+/post
+```
+
+### 8. Run tests
+
+```bash
+npm test
+```
+
+On Windows PowerShell, if `npm.ps1` is blocked by execution policy, run:
+
+```powershell
+cmd /c npm test
+```
+
+### Local vs Production Telegram Mode
+
+Local development:
+
+* `NODE_ENV=development`
+* Bot uses polling
+* No `WEBHOOK_URL` needed
+
+Production on Render:
+
+* `NODE_ENV=production`
+* Bot uses Telegram webhook
+* `WEBHOOK_URL` must be a public HTTPS URL
+* Telegram sends updates to `/webhook/telegram`
 
 ---
 
@@ -251,7 +378,6 @@ Important variables:
 
 * ARCHITECTURE.md
 * AI_USAGE.md
-* Postman collection
 
 ---
 
